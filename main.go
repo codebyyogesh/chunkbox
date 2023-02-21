@@ -13,10 +13,18 @@ import (
     "log"
     "net/http"
 )
+
 func home(w http.ResponseWriter, r *http.Request){
     w.Write([]byte("Hello from Chunkbox"))
 }
 
+func chunkboxView(w http.ResponseWriter, r *http.Request){
+    w.Write([]byte("Display a small chunk..."))
+}
+
+func chunkboxCreate(w http.ResponseWriter, r *http.Request){
+    w.Write([]byte("Create a small chunk..."))
+}
 
 // server mux stores a mapping between the URL patterns for your
 // application and the corresponding handlers.
@@ -26,6 +34,8 @@ func main() {
     // as handler for the "/" URL pattern
     mux := http.NewServeMux()
     mux.HandleFunc("/", home)
+    mux.HandleFunc("/chunkbox/view", chunkboxView)
+    mux.HandleFunc("/chunkbox/create", chunkboxCreate)
 
     // Use the http.ListenAndServe() function to start a new web server. We pass in
     // two parameters: the TCP network address to listen on (in this case ":3001")
