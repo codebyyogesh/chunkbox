@@ -1,9 +1,9 @@
 /*
 -----------------------------------------------------------
 
-	@Filename:         main.go
-	@Copyright Author: Yogesh K
-	@Date:             21/02/2023
+    @Filename:         main.go
+    @Copyright Author: Yogesh K
+    @Date:             21/02/2023
 
 -------------------------------------------------------------
 */
@@ -15,6 +15,14 @@ import (
 )
 
 func home(w http.ResponseWriter, r *http.Request){
+    // Check if the current request URL path exactly matches "/". If it doesn't, use
+    // the http.NotFound() function to send a 404 response to the client.
+    // Importantly, we then return from the handler. If we don't return, the handler
+    // would keep executing and also write the "Hello from Chunkbox" message.
+    if r.URL.Path != "/" {
+        http.NotFound(w, r)
+        return
+    }
     w.Write([]byte("Hello from Chunkbox"))
 }
 
@@ -26,8 +34,16 @@ func chunkboxCreate(w http.ResponseWriter, r *http.Request){
     w.Write([]byte("Create a small chunk..."))
 }
 
+
+// We dont use DefaultServeMux because it is a global variable, 
+// any package can access it and register a route — including any third-party
+// packages that your application imports. If one of those third-party 
+// packages is compromised, they could use DefaultServeMux to expose 
+// a malicious handler to the web.
+
 // server mux stores a mapping between the URL patterns for your
-// application and the corresponding handlers.
+// application and the corresponding handlers. The server mux created
+// here is a local one, unlike the DefaultServeMux
 
 func main() {
     // Initialise new server mux and register a home function
