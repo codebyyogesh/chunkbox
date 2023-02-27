@@ -11,7 +11,9 @@ package main
 
 import (
     "log"
+    "fmt"
     "net/http"
+    "strconv"
 )
 
 func home(w http.ResponseWriter, r *http.Request){
@@ -27,7 +29,22 @@ func home(w http.ResponseWriter, r *http.Request){
 }
 
 func chunkboxView(w http.ResponseWriter, r *http.Request){
-    w.Write([]byte("Display a small chunk..."))
+    // Extract the value of the id parameter from the query string and try to
+    // convert it to an integer using the strconv.Atoi() function. If it can't
+    // be converted to an integer, or the value is less than 1, we return a 404 page
+    // not found response.
+    id, err :=  strconv.Atoi(r.URL.Query().Get("id"))
+    if err != nil || id < 1{
+        http.NotFound(w, r)
+        return
+    }
+    // Use the fmt.Fprintf() function to interpolate the id value with our response
+    // and write it to the http.ResponseWriter.
+    // fmt.Fprintf() takes an io.Writer as the first parameter, but
+    // we are passing w which is object of type ResponseWriter.
+    // This can be done because ResponseWriter object satisfies the 
+    // interface as it has a w.Write() method.
+    fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
 }
 
 func chunkboxCreate(w http.ResponseWriter, r *http.Request){
