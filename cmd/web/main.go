@@ -12,6 +12,7 @@ package main
 import (
     "log"
     "net/http"
+    "flag"
 )
 
 
@@ -27,6 +28,16 @@ import (
 // here is a local one, unlike the DefaultServeMux
 
 func main() {
+    // Define a new command-line flag with the name 'addr', a default value of ":3001"
+    // and some short help text explaining what the flag controls. The value of the
+    // flag will be stored in the addr variable at runtime.
+    addr := flag.String("addr", ":3001", "HTTP network address")
+    // Importantly, we use the flag.Parse() function to parse the command-line flag.
+    // This reads in the command-line flag value and assigns it to the addr
+    // variable. You need to call this *before* you use the addr variable
+    // otherwise it will always contain the default value of ":3001". If any errors are
+    // encountered during parsing the application will be terminated.
+    flag.Parse()
     // Initialise new server mux and register a home function
     // as handler for the "/" URL pattern
     mux := http.NewServeMux()
@@ -45,13 +56,17 @@ func main() {
     mux.HandleFunc("/chunkbox/view", chunkboxView)
     mux.HandleFunc("/chunkbox/create", chunkboxCreate)
 
+    // The value returned from the flag.String() function is a pointer to the flag
+    // value, not the value itself. So we need to dereference the pointer (i.e.
+    // prefix it with the * symbol) before using it. Note that we're using the
+    // log.Printf() function to interpolate the address with the log message.
+    log.Printf("Starting server on %s", *addr)
     // Use the http.ListenAndServe() function to start a new web server. We pass in
-    // two parameters: the TCP network address to listen on (in this case ":3001")
+    // two parameters: the TCP network address to listen on (in this case *addr)
     // and the servemux we just created. If http.ListenAndServe() returns an error
     // we use the log.Fatal() function to log the error message and exit. Note
     // that any error returned by http.ListenAndServe() is always non-nil.
-    log.Print("Starting server on :3001")
-    err := http.ListenAndServe(":3001", mux)
+    err := http.ListenAndServe(*addr, mux)
     log.Fatal(err)
 }
 
