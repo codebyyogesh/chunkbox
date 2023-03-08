@@ -22,7 +22,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request){
     // Importantly, we then return from the handler. If we don't return, the handler
     // would keep executing and also write the "Hello from Chunkbox" message.
     if r.URL.Path != "/" {
-        http.NotFound(w, r)
+        app.notFound(w) // use the app.notFound helper
         return
     }
     // Initialize a slice containing the paths to the two files. It's important
@@ -39,8 +39,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request){
     // response to the user.
     ts, err := template.ParseFiles(files...)
     if err != nil {
-        app.errorLog.Print(err.Error())
-        http.Error(w, "Internal Server Error", 500)
+        app.serverError(w,err) // Use the serverError() helper.
         return
     }
 
@@ -48,8 +47,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request){
     // template as the response body.
     err = ts.ExecuteTemplate(w, "base", nil)
     if err != nil {
-        app.errorLog.Print(err.Error())
-        http.Error(w, "Internal Server Error", 500)
+        app.serverError(w,err) // Use the serverError() helper.
     }
 }
 
@@ -60,7 +58,7 @@ func (app *application)chunkboxView(w http.ResponseWriter, r *http.Request){
     // not found response.
     id, err :=  strconv.Atoi(r.URL.Query().Get("id"))
     if err != nil || id < 1{
-        http.NotFound(w, r)
+        app.notFound(w) // use the app.notFound helper
         return
     }
     // Use the fmt.Fprintf() function to interpolate the id value with our response
@@ -79,9 +77,7 @@ func (app *application)chunkboxCreate(w http.ResponseWriter, r *http.Request){
         // response header map. The first parameter is the header name, and
         // the second parameter is the header value.
         w.Header().Set("Allow", http.MethodPost)
-        // Use the http.Error() function to send a 405 status code and "Method Not
-        // Allowed" string as the response body.
-        http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+        app.clientError(w, http.StatusMethodNotAllowed) // Use the clientError() helper.
         return
     }
     w.Write([]byte("Create a small chunk..."))
