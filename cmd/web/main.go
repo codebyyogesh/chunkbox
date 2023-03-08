@@ -13,6 +13,7 @@ import (
     "log"
     "net/http"
     "flag"
+    "os"
 )
 
 
@@ -38,6 +39,19 @@ func main() {
     // otherwise it will always contain the default value of ":3001". If any errors are
     // encountered during parsing the application will be terminated.
     flag.Parse()
+    // Use log.New() to create a logger for writing information messages. This takes
+    // three parameters: the destination to write the logs to (os.Stdout), a string
+    // prefix for message (INFO followed by a tab), and flags to indicate what
+    // additional information to include (local date and time). Note that the flags
+    // are joined using the bitwise OR operator |.
+
+    infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+
+    // Create a logger for writing error messages in the same way, but use stderr as
+    // the destination and use the log.Lshortfile flag to include the relevant
+    // file name and line number.
+    errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
     // Initialise new server mux and register a home function
     // as handler for the "/" URL pattern
     mux := http.NewServeMux()
@@ -56,18 +70,26 @@ func main() {
     mux.HandleFunc("/chunkbox/view", chunkboxView)
     mux.HandleFunc("/chunkbox/create", chunkboxCreate)
 
+    // Initialize a new http.Server struct. We set the Addr and Handler fields so
+    // that the server uses the same network address and routes as before, and set
+    // the ErrorLog field so that the server now uses the custom errorLog logger in
+    // the event of any problems.
+    srv := &http.Server{
+        Addr:     *addr,
+        ErrorLog: errorLog,
+        Handler:  mux,
+    }
+
     // The value returned from the flag.String() function is a pointer to the flag
     // value, not the value itself. So we need to dereference the pointer (i.e.
     // prefix it with the * symbol) before using it. Note that we're using the
     // log.Printf() function to interpolate the address with the log message.
-    log.Printf("Starting server on %s", *addr)
-    // Use the http.ListenAndServe() function to start a new web server. We pass in
-    // two parameters: the TCP network address to listen on (in this case *addr)
-    // and the servemux we just created. If http.ListenAndServe() returns an error
-    // we use the log.Fatal() function to log the error message and exit. Note
-    // that any error returned by http.ListenAndServe() is always non-nil.
-    err := http.ListenAndServe(*addr, mux)
-    log.Fatal(err)
+    infoLog.Printf("Starting server on %s", *addr)
+
+    // Instead of the default http.ListenAndServe(), we will use the newly created
+    // http server struct. Call the ListenAndServe() method on our new http.Server struct. 
+    err := srv.ListenAndServe()
+    errorLog.Fatal(err)
 }
 
 
