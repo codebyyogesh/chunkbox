@@ -16,7 +16,12 @@ import (
     "os"
 )
 
-
+// Define an application struct to hold the application-wide dependencies for the
+// web application. For now we'll only include fields for the two custom loggers.
+type application struct {
+    errorLog *log.Logger
+    infoLog  *log.Logger
+}
 
 // We dont use DefaultServeMux because it is a global variable, 
 // any package can access it and register a route — including any third-party
@@ -52,6 +57,12 @@ func main() {
     // file name and line number.
     errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+    // Initialize a new instance of our application struct, containing the
+    // dependencies.
+    app := &application{
+        errorLog: errorLog,
+        infoLog:  infoLog,
+    }
     // Initialise new server mux and register a home function
     // as handler for the "/" URL pattern
     mux := http.NewServeMux()
@@ -66,9 +77,9 @@ func main() {
     // "/static" prefix before the request reaches the file server.
     mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-    mux.HandleFunc("/", home)
-    mux.HandleFunc("/chunkbox/view", chunkboxView)
-    mux.HandleFunc("/chunkbox/create", chunkboxCreate)
+    mux.HandleFunc("/", app.home)
+    mux.HandleFunc("/chunkbox/view", app.chunkboxView)
+    mux.HandleFunc("/chunkbox/create", app.chunkboxCreate)
 
     // Initialize a new http.Server struct. We set the Addr and Handler fields so
     // that the server uses the same network address and routes as before, and set
