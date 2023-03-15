@@ -15,6 +15,8 @@ import (
     "net/http"
     "flag"
     "os"
+    // Import the models package from internal/models.
+    "github.com/cpucortexm/chunkbox/internal/models"
     _ "github.com/go-sql-driver/mysql" //we need the driver’s init() function to run so that it can register itself with the database/sql package.
 )
 
@@ -23,6 +25,7 @@ import (
 type application struct {
     errorLog *log.Logger
     infoLog  *log.Logger
+    chunks   *models.ChunkModel
 }
 
 // We dont use DefaultServeMux because it is a global variable, 
@@ -76,6 +79,7 @@ func main() {
     app := &application{
         errorLog: errorLog,
         infoLog:  infoLog,
+        chunks: &models.ChunkModel{DB:db},
     }
     // Initialize a new http.Server struct. We set the Addr and Handler fields so
     // that the server uses the same network address and routes as before, and set
