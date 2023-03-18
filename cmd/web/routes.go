@@ -25,8 +25,8 @@ func (app *application) routes() *http.ServeMux{
     mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
     mux.HandleFunc("/", app.home)
-    mux.HandleFunc("/chunkbox/view", app.chunkboxView)
-    mux.HandleFunc("/chunkbox/create", app.chunkboxCreate)
+    mux.HandleFunc("/chunkbox/view", app.chunkView)
+    mux.HandleFunc("/chunkbox/create", app.chunkCreate)
 
     return mux
 }
