@@ -7,13 +7,17 @@
 package main
 
 import (
-    "fmt"
-    "strconv"
-    "net/http"
-    "html/template"
+	"errors"
+	"fmt"
+	"html/template"
+	"net/http"
+	"strconv"
+
+	"github.com/cpucortexm/chunkbox/internal/models"
 )
+
 // Start using the applications custom logger instead of the
-// Go's standard logger. Update handler functions so that they become 
+// Go's standard logger. Update handler functions so that they become
 // methods against the application struct.
 
 func (app *application) home(w http.ResponseWriter, r *http.Request){
@@ -61,13 +65,23 @@ func (app *application)chunkView(w http.ResponseWriter, r *http.Request){
         app.notFound(w) // use the app.notFound helper
         return
     }
-    // Use the fmt.Fprintf() function to interpolate the id value with our response
-    // and write it to the http.ResponseWriter.
-    // fmt.Fprintf() takes an io.Writer as the first parameter, but
-    // we are passing w which is object of type ResponseWriter.
-    // This can be done because ResponseWriter object satisfies the 
-    // interface as it has a w.Write() method.
-    fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
+    // Use the ChunkModel object's Get method to retrieve the data for a
+    // specific record based on its ID. If no matching record is found,
+    // return a 404 Not Found response.
+    chunk, err := app.chunks.Get(id)
+
+    if err != nil{
+        if errors.Is(err, models.ErrNoRecord){
+            app.notFound(w)
+        }else {
+            app.serverError(w, err)
+        }
+        return
+    }
+
+      // Write the snippet data as a plain-text HTTP response body.
+    fmt.Fprintf(w, "%+v", chunk)
+
 }
 
 func (app *application)chunkCreate(w http.ResponseWriter, r *http.Request){
@@ -80,5 +94,19 @@ func (app *application)chunkCreate(w http.ResponseWriter, r *http.Request){
         app.clientError(w, http.StatusMethodNotAllowed) // Use the clientError() helper.
         return
     }
-    w.Write([]byte("Create a small chunk..."))
+    // Create some variables holding dummy data. We'll remove these later on
+    // during the build.
+    title := "On BhagvadGita"
+    content := "The soul who meditates on the Self is content to serve the Self and rests satisfied within the Self; \n there remains nothing more for him to accomplish. \n- Bhagavad Gita 3.17"
+    expires := 7
+    // Pass the data to the ChunkModel.Insert() method, receiving the
+    // ID of the new record back.
+    id, err := app.chunks.Insert(title, content, expires)
+    if err != nil {
+        app.serverError(w, err)
+        return
+    }
+    // Redirect the user to the relevant page for the chunk.
+    http.Redirect(w, r, fmt.Sprintf("/chunkbox/view?id=%d", id), http.StatusSeeOther)
+
 }
