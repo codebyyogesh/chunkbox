@@ -9,7 +9,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
+    //	"html/template"
 	"net/http"
 	"strconv"
 
@@ -29,6 +29,19 @@ func (app *application) home(w http.ResponseWriter, r *http.Request){
         app.notFound(w) // use the app.notFound helper
         return
     }
+
+    chunks, err := app.chunks.Latest()
+
+    if err != nil{
+        app.serverError(w, err)
+        return
+    }
+
+    for _, c := range chunks{
+        fmt.Fprintf(w, "%v\n", c)
+    }
+
+    /*
     // Initialize a slice containing the paths to the two files. It's important
     // to note that the file containing our base template must be the *first*
     // file in the slice.
@@ -53,6 +66,8 @@ func (app *application) home(w http.ResponseWriter, r *http.Request){
     if err != nil {
         app.serverError(w,err) // Use the serverError() helper.
     }
+    */
+
 }
 
 func (app *application)chunkView(w http.ResponseWriter, r *http.Request){

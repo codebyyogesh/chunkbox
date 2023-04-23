@@ -81,5 +81,56 @@ func (m *ChunkModel) Get(id int) (*Chunk, error) {
 // This will return the 10 most recently created snippets.
 // We use slice of pointers to Chunk
 func (m *ChunkModel) Latest() ([]*Chunk, error) {
-    return nil, nil
+
+ // Write the SQL statement we want to execute.
+    stmt := `SELECT id, title, content, created, expires FROM chunks
+    WHERE expires > UTC_TIMESTAMP() ORDER BY id DESC LIMIT 10`
+
+    // Use the Query() method on the connection pool to execute our
+    // SQL statement. This returns a sql.Rows resultset containing the result of
+    // our query.
+    rows, err := m.DB.Query(stmt)
+    if err != nil {
+        return nil, err
+    }
+
+    // We defer rows.Close() to ensure the sql.Rows resultset is
+    // always properly closed before the Latest() method returns. This defer
+    // statement should come *after* you check for an error from the Query()
+    // method. Otherwise, if Query() returns an error, you'll get a panic
+    // trying to close a nil resultset.
+    defer rows.Close()
+
+    // Array of 
+    chunks := []*Chunk{}
+    // Use rows.Next to iterate through the rows in the resultset. This
+    // prepares the first (and then each subsequent) row to be acted on by the
+    // rows.Scan() method. If iteration over all the rows completes then the
+    // resultset automatically closes itself and frees-up the underlying
+    // database connection.
+    for rows.Next() {
+        // Create a pointer to a new zeroed Chunk struct.
+        c := &Chunk{}
+        // Use rows.Scan() to copy the values from each field in the row to the
+        // new Chunk object that we created. Again, the arguments to row.Scan()
+        // must be pointers to the place you want to copy the data into, and the
+        // number of arguments must be exactly the same as the number of
+        // columns returned by your statement.
+        err = rows.Scan(&c.ID, &c.Title, &c.Content, &c.Created, &c.Expires)
+        if err != nil{
+            return nil, err
+        }
+
+        chunks = append(chunks, c)
+    }
+
+    // When the rows.Next() loop has finished we call rows.Err() to retrieve any
+    // error that was encountered during the iteration. It's important to
+    // call this - don't assume that a successful iteration was completed
+    // over the whole resultset.
+    if err = rows.Err(); err != nil {
+        return nil, err
+    }
+    // If everything went OK then return the Chunks slice.
+    return chunks, nil
 }
