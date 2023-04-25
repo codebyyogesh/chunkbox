@@ -9,7 +9,7 @@ package main
 import (
 	"errors"
 	"fmt"
-    //	"html/template"
+	"html/template"
 	"net/http"
 	"strconv"
 
@@ -93,10 +93,33 @@ func (app *application)chunkView(w http.ResponseWriter, r *http.Request){
         }
         return
     }
+    
+    // Initialize a slice containing the paths to the view.tmpl file,
+    // plus the base layout and navigation partial that we made earlier.
+    files := []string{
+        "./ui/html/base.html",
+        "./ui/html/partials/nav.html",
+        "./ui/html/pages/view.html",
+    }
 
-      // Write the snippet data as a plain-text HTTP response body.
-    fmt.Fprintf(w, "%+v", chunk)
+    // Parse the template files...
+    ts, err := template.ParseFiles(files...)
+    if err != nil {
+        app.serverError(w, err)
+        return
+    }
 
+     // Create an instance of a templateData struct holding the chunk data.
+    data := &templateData{
+        Chunk: chunk,
+    }
+
+    // And then execute them. Pass templateData (to render multiple pieces of data) struct as the final parameter
+    err = ts.ExecuteTemplate(w, "base", data)
+
+    if err != nil {
+        app.serverError(w, err)
+    }
 }
 
 func (app *application)chunkCreate(w http.ResponseWriter, r *http.Request){
@@ -111,8 +134,8 @@ func (app *application)chunkCreate(w http.ResponseWriter, r *http.Request){
     }
     // Create some variables holding dummy data. We'll remove these later on
     // during the build.
-    title := "On BhagvadGita"
-    content := "The soul who meditates on the Self is content to serve the Self and rests satisfied within the Self; \n there remains nothing more for him to accomplish. \n- Bhagavad Gita 3.17"
+    title := "On Rigveda"
+    content := "One should, perform karma with nonchalance \n without expecting the benefits \n because sooner or later one shall definitely gets the fruits.. \n- Rigveda"
     expires := 7
     // Pass the data to the ChunkModel.Insert() method, receiving the
     // ID of the new record back.

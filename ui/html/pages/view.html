@@ -1,0 +1,15 @@
+{{define "title"}}Chunk #{{.Chunk.ID}}{{end}}
+
+{{define "main"}}
+    <div class='chunk'>
+        <div class='metadata'>
+            <strong>{{.Chunk.Title}}</strong>
+            <span>#{{.Chunk.ID}}</span>
+        </div>
+        <pre><code>{{.Chunk.Content}}</code></pre>
+        <div class='metadata'>
+            <time>Created: {{.Chunk.Created}}</time>
+            <time>Expires: {{.Chunk.Expires}}</time>
+        </div>
+    </div>
+{{end}}
