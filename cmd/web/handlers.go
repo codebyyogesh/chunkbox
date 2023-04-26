@@ -37,11 +37,6 @@ func (app *application) home(w http.ResponseWriter, r *http.Request){
         return
     }
 
-    for _, c := range chunks{
-        fmt.Fprintf(w, "%v\n", c)
-    }
-
-    /*
     // Initialize a slice containing the paths to the two files. It's important
     // to note that the file containing our base template must be the *first*
     // file in the slice.
@@ -60,13 +55,17 @@ func (app *application) home(w http.ResponseWriter, r *http.Request){
         return
     }
 
+    // Create an instance of a templateData struct holding the slice of
+    // chunks.
+    data := &templateData{
+        Chunks: chunks,
+    }
     // Use the ExecuteTemplate() method to write the content of the "base" 
     // template as the response body.
-    err = ts.ExecuteTemplate(w, "base", nil)
+    err = ts.ExecuteTemplate(w, "base", data)
     if err != nil {
         app.serverError(w,err) // Use the serverError() helper.
     }
-    */
 
 }
 

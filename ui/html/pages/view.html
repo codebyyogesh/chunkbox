@@ -1,15 +1,17 @@
 {{define "title"}}Chunk #{{.Chunk.ID}}{{end}}
 
 {{define "main"}}
+    {{with .Chunk}}
     <div class='chunk'>
         <div class='metadata'>
-            <strong>{{.Chunk.Title}}</strong>
-            <span>#{{.Chunk.ID}}</span>
+            <strong>{{.Title}}</strong>
+            <span>#{{.ID}}</span>
         </div>
-        <pre><code>{{.Chunk.Content}}</code></pre>
+        <pre><code>{{.Content}}</code></pre>
         <div class='metadata'>
-            <time>Created: {{.Chunk.Created}}</time>
-            <time>Expires: {{.Chunk.Expires}}</time>
+            <time>Created: {{.Created}}</time>
+            <time>Expires: {{.Expires}}</time>
         </div>
     </div>
+    {{end}}
 {{end}}
