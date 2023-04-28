@@ -14,6 +14,7 @@ import (
     "log"
     "net/http"
     "flag"
+    "html/template"
     "os"
     // Import the models package from internal/models.
     "github.com/cpucortexm/chunkbox/internal/models"
@@ -26,6 +27,7 @@ type application struct {
     errorLog *log.Logger
     infoLog  *log.Logger
     chunks   *models.ChunkModel
+    templateCache map[string]*template.Template
 }
 
 // We dont use DefaultServeMux because it is a global variable, 
@@ -74,12 +76,19 @@ func main() {
     // in this scenario because of errorLog.Fatal() which terminates
     // the program immediately.
     defer db.Close()
+    
+    // Initialize a new template cache...
+    templateCache, err := newTemplateCache()
+    if err != nil {
+        errorLog.Fatal(err)
+    }
     // Initialize a new instance of our application struct, containing the
     // dependencies.
     app := &application{
         errorLog: errorLog,
         infoLog:  infoLog,
         chunks: &models.ChunkModel{DB:db},
+        templateCache: templateCache,
     }
     // Initialize a new http.Server struct. We set the Addr and Handler fields so
     // that the server uses the same network address and routes as before, and set
