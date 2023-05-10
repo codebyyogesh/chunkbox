@@ -1,4 +1,10 @@
+/*-----------------------------------------------------------
+ @Filename:         templates.go
+ @Copyright Author: Yogesh K
+ @Date:             10/05/2023
+-------------------------------------------------------------*/
 package main
+
 import(
     "html/template"
     "path/filepath"
@@ -7,6 +13,7 @@ import(
 // Define a templateData type to act as the holding structure for
 // any dynamic data that we want to pass to our HTML templates.
 type templateData struct {
+    CurrentYear int
     Chunk *models.Chunk
     Chunks []*models.Chunk // Chunks field for holding a slice of chunks
 }
