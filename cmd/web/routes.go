@@ -35,5 +35,6 @@ func (app *application) routes() http.Handler{
    // Wrap the existing chain with the logRequest middleware.
    // Middleware flow below
    // logRequest ↔ secureHeaders ↔ servemux ↔ application handler
-    return app.logRequest(secureHeaders(mux))
+   // Finally wrap with the recoverpanic middleware
+    return app.recoverPanic(app.logRequest(secureHeaders(mux)))
 }
